@@ -15,7 +15,7 @@ internal static class Program
             }
             string root = Directory.GetCurrentDirectory();
             Log(root);
-            DotEnv.Load(Path.Combine(root, ".env"));
+            LoadEnviromentVariable();
             accessToken = Environment.GetEnvironmentVariable("ACCESS_TOKEN");
 
             HttpClient client = new HttpClient();
@@ -56,20 +56,45 @@ internal static class Program
             Console.WriteLine(message);
         }
     }
-}
 
-public static class DotEnv
-{
-    public static void Load(string filePath)
+    public static void LoadEnviromentVariable()
     {
-        Program.Log("Loading environment variables from " + filePath);
+        string filePath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+        Log("Loading environment variables from " + filePath);
         if (!File.Exists(filePath))
         {
             Console.WriteLine("File not found");
-            Console.Write("Give me an Access Token: ");
-            string? accessToken = Console.ReadLine();
-            Environment.SetEnvironmentVariable("ACCESS_TOKEN", accessToken!);
-            return;
+            Console.Write("Do you want to login or give an access token? (login/token): ");
+            do
+            {
+                switch (Console.ReadLine())
+                {
+                    case "login":
+                        throw new NotImplementedException();
+                    case "token":
+                        Console.Write("Give me an Access Token: ");
+                        string? accessToken = Console.ReadLine();
+
+                        if (accessToken == null)
+                        {
+                            Console.WriteLine("Invalid token");
+                            continue;
+                        }
+                        
+                        accessToken = accessToken.Trim();
+
+                        Console.WriteLine("Do you want to save the token to a .env file? (y/n): ");
+                        if (Console.ReadLine() == "y")
+                        {
+                            Log("Saving token to .env file");
+                            File.WriteAllText(filePath, "ACCESS_TOKEN=" + accessToken);
+                        }
+                        Environment.SetEnvironmentVariable("ACCESS_TOKEN", accessToken);
+                        return;
+                    default:
+                        break;
+                }
+            } while (true);
         }
 
         foreach (var line in File.ReadAllLines(filePath))
@@ -78,10 +103,10 @@ public static class DotEnv
 
             if (parts.Length != 2)
             {
-                Program.Log("Invalid line: " + line);
+                Log("Invalid line: " + line);
                 continue;
             }
-            Program.Log("Setting " + parts[1] + " to " + parts[0]);
+            Log("Setting " + parts[1] + " to " + parts[0]);
             Environment.SetEnvironmentVariable(parts[0], parts[1]);
         }
     }

@@ -65,14 +65,14 @@ internal static class Program
         if (!File.Exists(filePath))
         {
             Console.WriteLine("File not found");
-            Console.Write("Do you want to login or give an access token? (login/token): ");
             do
             {
+                Console.Write("Do you want to login or give an access token? (login/token): ");
                 switch (Console.ReadLine())
                 {
                     case "login":
-                        Process.Start("https://chat.openai.com/auth/login");
-                        return;
+                        Process.Start(new ProcessStartInfo("https://chat.openai.com/auth/login") { UseShellExecute = true });
+                        break;
                     case "token":
                         Console.Write("Give me an Access Token: ");
                         string? accessToken = Console.ReadLine();

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Diagnostics;
 using Newtonsoft.Json;
 
 internal static class Program
@@ -28,7 +29,7 @@ internal static class Program
             try
             {
                 var dynamicData = JsonConvert.DeserializeObject<dynamic>(responseString);
-                Console.WriteLine("The response is:\n");
+                Console.WriteLine("The response is:");
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(dynamicData!.choices[0].text);
             }
@@ -70,7 +71,8 @@ internal static class Program
                 switch (Console.ReadLine())
                 {
                     case "login":
-                        throw new NotImplementedException();
+                        Process.Start("https://chat.openai.com/auth/login");
+                        return;
                     case "token":
                         Console.Write("Give me an Access Token: ");
                         string? accessToken = Console.ReadLine();

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 internal static class Program
 {
     private static bool DEBUG = false;
-    private static string? accessToken;
+    private static string? apiKey;
     private static async Task Main(string[] args)
     {
         if (args.Length > 0)
@@ -17,10 +17,10 @@ internal static class Program
             string root = Directory.GetCurrentDirectory();
             Log(root);
             LoadEnviromentVariable();
-            accessToken = Environment.GetEnvironmentVariable("ACCESS_TOKEN");
+            accessToken = Environment.GetEnvironmentVariable("APIKEY");
 
             HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("authorization", $"Bearer {accessToken}");
+            client.DefaultRequestHeaders.Add("authorization", $"Bearer {apiKey}");
 
             HttpResponseMessage response = await client.PostAsync("https://api.openai.com/v1/completions", 
             new StringContent("{\"model\": \"text-davinci-001\", \"prompt\": \"" + args[0] + "\", \"temperature\": 1, \"max_tokens\": 100}", Encoding.UTF8, "application/json"));
@@ -67,31 +67,31 @@ internal static class Program
             Console.WriteLine("File not found");
             do
             {
-                Console.Write("Do you want to login or give an access token? (login/token): ");
+                Console.Write("Do you want to login or give an api key? (login/key): ");
                 switch (Console.ReadLine())
                 {
                     case "login":
                         Process.Start(new ProcessStartInfo("https://chat.openai.com/auth/login") { UseShellExecute = true });
                         break;
-                    case "token":
-                        Console.Write("Give me an Access Token: ");
+                    case "key":
+                        Console.Write("Give me an API key: ");
                         string? accessToken = Console.ReadLine();
 
-                        if (accessToken == null)
+                        if (apiKey == null)
                         {
-                            Console.WriteLine("Invalid token");
+                            Console.WriteLine("Invalid key");
                             continue;
                         }
                         
-                        accessToken = accessToken.Trim();
+                        apiKey = apiKey.Trim();
 
-                        Console.WriteLine("Do you want to save the token to a .env file? (y/n): ");
+                        Console.WriteLine("Do you want to save the key to a .env file? (y/n): ");
                         if (Console.ReadLine() == "y")
                         {
                             Log("Saving token to .env file");
-                            File.WriteAllText(filePath, "ACCESS_TOKEN=" + accessToken);
+                            File.WriteAllText(filePath, "APIKEY=" + apiKey);
                         }
-                        Environment.SetEnvironmentVariable("ACCESS_TOKEN", accessToken);
+                        Environment.SetEnvironmentVariable("APIKEY", apiKey);
                         return;
                     default:
                         break;

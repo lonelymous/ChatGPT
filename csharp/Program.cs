@@ -6,14 +6,29 @@ internal static class Program
 {
     private static bool DEBUG = false;
     private static string? apiKey;
+
+
+    private static void CheckArgs(string arg)
+    {
+        if (arg == "debug")
+        {
+            DEBUG = true;
+        }
+        else if (arg == "path")
+        {
+            UpdatePath();
+        }
+    }
     private static async Task Main(string[] args)
     {
-        UpdatePath();
         if (args.Length > 0)
         {
-            if (args.Length > 1 && args[1] == "debug")
+            if (args.Length > 1)
             {
-                DEBUG = true;
+                foreach (var arg in args)
+                {
+                    CheckArgs(arg);
+                }
             }
             await Ask(args[0]);
         }
@@ -24,12 +39,15 @@ internal static class Program
             while (true)
             {
                 Console.Write("> ");
-                string? question = Console.ReadLine();
-                if (question == null) continue;
-                else if (question == "exit" || question == "quit" || question == "q") break;
+                string question = Console.ReadLine()!.Trim();
+                if (question == "") continue;
+                else if (question == "exit" | question == "quit" | question == "q") break;
                 else if (question == "dkey")
                 {
-                    File.Delete(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+                    string path = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+                    Log("Deleting " + path);
+                    File.Delete(path);
+                    Console.WriteLine("Deleted the key");
                     continue;
                 }
                 else if (question == "debug")
@@ -38,7 +56,14 @@ internal static class Program
                     Console.WriteLine("Debug mode is now " + (DEBUG ? "on" : "off"));
                     continue;
                 }
+                else if (question == "path")
+                {
+                    UpdatePath();
+                    Console.WriteLine("Path updated");
+                    continue;
+                }
                 await Ask(question!);
+                GC.Collect();
             }
         }
     }
@@ -85,6 +110,7 @@ internal static class Program
         }
         try
         {
+            Log("Updating path with " + Directory.GetCurrentDirectory());
             Environment.SetEnvironmentVariable(name, oldValue + @";" + Directory.GetCurrentDirectory(), scope);
         }
         catch (Exception ex)

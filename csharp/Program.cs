@@ -17,7 +17,7 @@ internal static class Program
             string root = Directory.GetCurrentDirectory();
             Log(root);
             LoadEnviromentVariable();
-            accessToken = Environment.GetEnvironmentVariable("APIKEY");
+            apiKey = Environment.GetEnvironmentVariable("APIKEY");
 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("authorization", $"Bearer {apiKey}");
@@ -71,11 +71,11 @@ internal static class Program
                 switch (Console.ReadLine())
                 {
                     case "login":
-                        Process.Start(new ProcessStartInfo("https://chat.openai.com/auth/login") { UseShellExecute = true });
+                        Process.Start(new ProcessStartInfo("https://platform.openai.com/account/api-keys") { UseShellExecute = true });
                         break;
                     case "key":
                         Console.Write("Give me an API key: ");
-                        string? accessToken = Console.ReadLine();
+                        string? apiKey = Console.ReadLine();
 
                         if (apiKey == null)
                         {
@@ -85,7 +85,7 @@ internal static class Program
                         
                         apiKey = apiKey.Trim();
 
-                        Console.WriteLine("Do you want to save the key to a .env file? (y/n): ");
+                        Console.Write("Do you want to save the key to a .env file? (y/n): ");
                         if (Console.ReadLine() == "y")
                         {
                             Log("Saving token to .env file");

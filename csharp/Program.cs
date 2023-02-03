@@ -6,8 +6,6 @@ internal static class Program
 {
     private static bool DEBUG = false;
     private static string? apiKey;
-
-
     private static void CheckArgs(string arg)
     {
         if (arg == "debug")

@@ -19,6 +19,9 @@ internal static class Program
     }
     private static async Task Main(string[] args)
     {
+        Console.Title = "OpenAI C# CLI";
+        Console.WriteLine("Welcome to the OpenAI C# CLI");
+        LoadEnviromentVariable();
         if (args.Length > 0)
         {
             if (args.Length > 1)
@@ -32,8 +35,6 @@ internal static class Program
         }
         else
         {
-            Console.Title = "OpenAI C# CLI";
-            Console.WriteLine("Welcome to the OpenAI C# CLI");
             while (true)
             {
                 Console.Write("> ");
@@ -67,9 +68,6 @@ internal static class Program
     }
     private static async Task Ask(string question)
     {
-        string root = Directory.GetCurrentDirectory();
-        Log(root);
-        LoadEnviromentVariable();
         apiKey = Environment.GetEnvironmentVariable("APIKEY");
 
         HttpClient client = new HttpClient();

@@ -4,8 +4,8 @@ using Newtonsoft.Json;
 
 internal static class Program
 {
+    private static string? apiKey = null;
     private static bool DEBUG = false;
-    private static string? apiKey;
     private static void CheckArgs(string arg)
     {
         if (arg == "debug")
@@ -26,7 +26,7 @@ internal static class Program
         {
             if (args.Length > 1)
             {
-                foreach (var arg in args)
+                foreach (string arg in args)
                 {
                     CheckArgs(arg);
                 }
@@ -68,10 +68,8 @@ internal static class Program
     }
     private static async Task Ask(string question)
     {
-        apiKey = Environment.GetEnvironmentVariable("APIKEY");
-
         HttpClient client = new HttpClient();
-        client.DefaultRequestHeaders.Add("authorization", $"Bearer {apiKey}");
+        client.DefaultRequestHeaders.Add("authorization", $"Bearer {apiKey!}");
 
         HttpResponseMessage response = await client.PostAsync("https://api.openai.com/v1/completions", 
         new StringContent("{\"model\": \"text-davinci-001\", \"prompt\": \"" + question + "\", \"temperature\": 1, \"max_tokens\": 100}", Encoding.UTF8, "application/json"));
@@ -79,7 +77,7 @@ internal static class Program
         string responseString = await response.Content.ReadAsStringAsync();
         try
         {
-            var dynamicData = JsonConvert.DeserializeObject<dynamic>(responseString);
+            dynamic? dynamicData = JsonConvert.DeserializeObject<dynamic>(responseString);
             Console.WriteLine("The response is:");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(dynamicData!.choices[0].text.ToString().Trim());
@@ -143,7 +141,7 @@ internal static class Program
                         break;
                     case "key":
                         Console.Write("Give me an API key: ");
-                        string? apiKey = Console.ReadLine();
+                        apiKey = Console.ReadLine();
 
                         if (apiKey == null)
                         {
@@ -159,7 +157,6 @@ internal static class Program
                             Log("Saving token to .env file");
                             File.WriteAllText(filePath, "APIKEY=" + apiKey);
                         }
-                        Environment.SetEnvironmentVariable("APIKEY", apiKey);
                         return;
                     default:
                         break;
@@ -176,8 +173,12 @@ internal static class Program
                 Log("Invalid line: " + line);
                 continue;
             }
-            Log("Setting " + parts[1] + " to " + parts[0]);
-            Environment.SetEnvironmentVariable(parts[0], parts[1]);
+            if (parts[0] == "APIKEY")
+            {
+                Log(parts[0] + "Found= " + parts[1]);
+                apiKey = parts[1];
+                continue;
+            }
         }
     }
 }

@@ -118,7 +118,9 @@ internal static class Program
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(ex);
             Environment.SetEnvironmentVariable(name, oldValue!, scope);
-            throw;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Maybe you need to run this program as administrator");
+            Console.ResetColor();
         }
     }
     private static void Log(string message)

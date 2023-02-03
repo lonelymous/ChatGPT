@@ -82,7 +82,7 @@ internal static class Program
             var dynamicData = JsonConvert.DeserializeObject<dynamic>(responseString);
             Console.WriteLine("The response is:");
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(dynamicData!.choices[0].text);
+            Console.WriteLine(dynamicData!.choices[0].text.ToString().Trim());
         }
         catch (Exception ex)
         {

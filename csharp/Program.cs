@@ -8,57 +8,101 @@ internal static class Program
     private static string? apiKey;
     private static async Task Main(string[] args)
     {
+        UpdatePath();
         if (args.Length > 0)
         {
             if (args.Length > 1 && args[1] == "debug")
             {
                 DEBUG = true;
             }
-            string root = Directory.GetCurrentDirectory();
-            Log(root);
-            LoadEnviromentVariable();
-            apiKey = Environment.GetEnvironmentVariable("APIKEY");
-
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("authorization", $"Bearer {apiKey}");
-
-            HttpResponseMessage response = await client.PostAsync("https://api.openai.com/v1/completions", 
-            new StringContent("{\"model\": \"text-davinci-001\", \"prompt\": \"" + args[0] + "\", \"temperature\": 1, \"max_tokens\": 100}", Encoding.UTF8, "application/json"));
-        
-            string responseString = await response.Content.ReadAsStringAsync();
-            try
-            {
-                var dynamicData = JsonConvert.DeserializeObject<dynamic>(responseString);
-                Console.WriteLine("The response is:");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(dynamicData!.choices[0].text);
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Error while deserialize the JSON");
-                Console.WriteLine("Error message: ", ex.Message);
-            } 
-            finally
-            {
-                Console.ResetColor();
-            }
+            await Ask(args[0]);
         }
         else
         {
-            Console.WriteLine("No arguments were passed to the program.");
+            Console.Title = "OpenAI C# CLI";
+            Console.WriteLine("Welcome to the OpenAI C# CLI");
+            while (true)
+            {
+                Console.Write("> ");
+                string? question = Console.ReadLine();
+                if (question == null) continue;
+                else if (question == "exit" || question == "quit" || question == "q") break;
+                else if (question == "dkey")
+                {
+                    File.Delete(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+                    continue;
+                }
+                else if (question == "debug")
+                {
+                    DEBUG = !DEBUG;
+                    Console.WriteLine("Debug mode is now " + (DEBUG ? "on" : "off"));
+                    continue;
+                }
+                await Ask(question!);
+            }
         }
     }
+    private static async Task Ask(string question)
+    {
+        string root = Directory.GetCurrentDirectory();
+        Log(root);
+        LoadEnviromentVariable();
+        apiKey = Environment.GetEnvironmentVariable("APIKEY");
 
-    public static void Log(string message)
+        HttpClient client = new HttpClient();
+        client.DefaultRequestHeaders.Add("authorization", $"Bearer {apiKey}");
+
+        HttpResponseMessage response = await client.PostAsync("https://api.openai.com/v1/completions", 
+        new StringContent("{\"model\": \"text-davinci-001\", \"prompt\": \"" + question + "\", \"temperature\": 1, \"max_tokens\": 100}", Encoding.UTF8, "application/json"));
+    
+        string responseString = await response.Content.ReadAsStringAsync();
+        try
+        {
+            var dynamicData = JsonConvert.DeserializeObject<dynamic>(responseString);
+            Console.WriteLine("The response is:");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(dynamicData!.choices[0].text);
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Error while deserialize the JSON");
+            Console.WriteLine("Error message: ", ex.Message);
+        } 
+        finally
+        {
+            Console.ResetColor();
+        }
+    }
+    private static void UpdatePath()
+    {
+        string name = "PATH";
+        EnvironmentVariableTarget scope = EnvironmentVariableTarget.Machine;
+        string? oldValue = Environment.GetEnvironmentVariable(name, scope);
+        if (oldValue!.Contains(Directory.GetCurrentDirectory()))
+        {
+            return;
+        }
+        try
+        {
+            Environment.SetEnvironmentVariable(name, oldValue + @";" + Directory.GetCurrentDirectory(), scope);
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(ex);
+            Environment.SetEnvironmentVariable(name, oldValue!, scope);
+            throw;
+        }
+    }
+    private static void Log(string message)
     {
         if (DEBUG)
         {
             Console.WriteLine(message);
         }
     }
-
-    public static void LoadEnviromentVariable()
+    private static void LoadEnviromentVariable()
     {
         string filePath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
         Log("Loading environment variables from " + filePath);
